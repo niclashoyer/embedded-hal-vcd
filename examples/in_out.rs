@@ -3,8 +3,8 @@ use embedded_hal_vcd::*;
 use std::fs;
 
 fn main() -> Result<(), std::io::Error> {
-	let f = fs::File::open("examples/test.vcd")?;
-	let f2 = fs::File::create("examples/test2.vcd")?;
+	let f = fs::File::open("examples/data/test.vcd")?;
+	let f2 = fs::File::create("examples/data/test2.vcd")?;
 	let mut reader = VcdReader::new(f).unwrap();
 	let in_pin = reader.get_pin(&["libsigrok", "data"]).unwrap();
 	let mut writer = VcdWriterBuilder::new(f2).unwrap();
