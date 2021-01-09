@@ -299,9 +299,12 @@ where
 	W: std::io::Write,
 {
 	pub fn timestamp<D: TryInto<Nanoseconds<u64>>>(&mut self, timestamp: D) -> IOResult<()> {
-		let ts: Nanoseconds<u64> = timestamp
-			.try_into()
-			.unwrap_or_else(|_| panic!("can't convert timestamp"));
+		let ts: Nanoseconds<u64> = timestamp.try_into().map_err(|_e| {
+			std::io::Error::new(
+				std::io::ErrorKind::InvalidInput,
+				"can't convert timestamp to nanoseconds",
+			)
+		})?;
 		self.writer.timestamp(ts.0)
 	}
 
