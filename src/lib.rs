@@ -4,7 +4,7 @@ use embedded_hal::digital as hal;
 use fnv::FnvHashMap;
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{FromPrimitive, ToPrimitive};
-use std::fs;
+use std::convert::TryInto;
 use std::io::Result as IOResult;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;
@@ -170,7 +170,7 @@ impl<R> VcdReader<R>
 where
 	R: std::io::Read,
 {
-	fn new(read: R) -> IOResult<Self> {
+	pub fn new(read: R) -> IOResult<Self> {
 		let mut parser = vcd::Parser::new(read);
 		let header = parser.parse_header()?;
 		let scale = Self::timescale_to_duration(&header).unwrap();
@@ -182,6 +182,10 @@ where
 		})
 	}
 
+	pub fn scale(&self) -> Generic<u64> {
+		self.scale
+	}
+
 	fn timescale_to_duration(header: &vcd::Header) -> Option<Generic<u64>> {
 		if let Some((scale, unit)) = header.timescale {
 			let fraction = Fraction::new(1, unit.divisor() as u32);
@@ -191,7 +195,7 @@ where
 		}
 	}
 
-	fn get_pin<S>(&mut self, path: &[S]) -> Option<InputPin>
+	pub fn get_pin<S>(&mut self, path: &[S]) -> Option<InputPin>
 	where
 		S: Borrow<str>,
 	{
@@ -241,7 +245,6 @@ where
 	W: std::io::Write,
 {
 	writer: vcd::Writer<W>,
-	//scale: Option<Generic<u64>>,
 	pins: Vec<(vcd::IdCode, Arc<AtomicPinState>)>,
 }
 
@@ -249,9 +252,9 @@ impl<W> VcdWriterBuilder<W>
 where
 	W: std::io::Write,
 {
-	pub fn new(writer: W, ts: u32, unit: vcd::TimescaleUnit) -> IOResult<Self> {
+	pub fn new(writer: W) -> IOResult<Self> {
 		let mut writer = vcd::Writer::new(writer);
-		writer.timescale(ts, unit)?;
+		writer.timescale(1, vcd::TimescaleUnit::NS)?;
 		writer.add_module("top")?;
 		Ok(VcdWriterBuilder {
 			writer,
@@ -295,6 +298,13 @@ impl<W> VcdWriter<W>
 where
 	W: std::io::Write,
 {
+	pub fn timestamp<D: TryInto<Nanoseconds<u64>>>(&mut self, timestamp: D) -> IOResult<()> {
+		let ts: Nanoseconds<u64> = timestamp
+			.try_into()
+			.unwrap_or_else(|_| panic!("can't convert timestamp"));
+		self.writer.timestamp(ts.0)
+	}
+
 	pub fn sample(&mut self) -> IOResult<()> {
 		for (id, pin) in self.pins.iter() {
 			let state: PinState = pin.load(Ordering::SeqCst);
@@ -302,16 +312,4 @@ where
 		}
 		Ok(())
 	}
-}
-
-fn main() -> Result<(), std::io::Error> {
-	let f = fs::File::open("test.vcd")?;
-	let mut pins = VcdReader::new(f).unwrap();
-	let pin = pins.get_pin(&["libsigrok", "data"]);
-
-	for t in pins {
-		println!("{:?}: {:?}", t, pin);
-	}
-
-	Ok(())
 }
