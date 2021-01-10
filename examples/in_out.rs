@@ -1,5 +1,5 @@
 use embedded_hal::digital as hal;
-use embedded_hal_vcd::*;
+use embedded_hal_vcd::{reader::VcdReader, writer::VcdWriterBuilder};
 use std::fs;
 
 fn main() -> Result<(), std::io::Error> {
