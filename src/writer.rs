@@ -29,16 +29,16 @@ where
 
 	pub fn add_push_pull_pin(&mut self, reference: &str) -> IOResult<PushPullPin> {
 		let code = self.writer.add_wire(1, reference)?;
-		let pin = Arc::new(AtomicPinState::new(PinState::Floating));
+		let pin = Arc::new(AtomicPinState::new_with_state(PinState::Floating));
 		self.pins.push((code, pin.clone()));
 		Ok(PushPullPin::new(pin))
 	}
 
-	pub fn add_open_gain_pin(&mut self, reference: &str) -> IOResult<OpenGainPin> {
+	pub fn add_open_drain_pin(&mut self, reference: &str) -> IOResult<OpenDrainPin> {
 		let code = self.writer.add_wire(1, reference)?;
-		let pin = Arc::new(AtomicPinState::new(PinState::Floating));
+		let pin = Arc::new(AtomicPinState::new_with_state(PinState::Floating));
 		self.pins.push((code, pin.clone()));
-		Ok(OpenGainPin::new(pin))
+		Ok(OpenDrainPin::new(pin))
 	}
 
 	pub fn build(mut self) -> IOResult<VcdWriter<W>> {

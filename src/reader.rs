@@ -50,7 +50,7 @@ where
 		S: Borrow<str>,
 	{
 		if let Some(v) = self.header.find_var(path) {
-			let state = Arc::new(AtomicPinState::new(PinState::Floating));
+			let state = Arc::new(AtomicPinState::new_with_state(PinState::Floating));
 			let pin = InputPin::new(state.clone());
 			self.pins.insert(v.code, state);
 			Some(pin)

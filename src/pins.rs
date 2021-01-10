@@ -42,7 +42,11 @@ pub struct AtomicPinState {
 }
 
 impl AtomicPinState {
-	pub fn new(state: PinState) -> Self {
+	pub fn new() -> Self {
+		Self::new_with_state(PinState::Floating)
+	}
+
+	pub fn new_with_state(state: PinState) -> Self {
 		AtomicPinState {
 			state: AtomicUsize::new(state.to_usize().unwrap()),
 		}
@@ -116,17 +120,17 @@ impl hal::InputPin for PushPullPin {
 }
 
 #[derive(Clone, Debug)]
-pub struct OpenGainPin {
+pub struct OpenDrainPin {
 	state: Arc<AtomicPinState>,
 }
 
-impl OpenGainPin {
+impl OpenDrainPin {
 	pub fn new(state: Arc<AtomicPinState>) -> Self {
-		OpenGainPin { state }
+		OpenDrainPin { state }
 	}
 }
 
-impl hal::OutputPin for OpenGainPin {
+impl hal::OutputPin for OpenDrainPin {
 	type Error = Infallible;
 
 	fn try_set_high(&mut self) -> Result<(), Self::Error> {
@@ -138,7 +142,7 @@ impl hal::OutputPin for OpenGainPin {
 	}
 }
 
-impl hal::InputPin for OpenGainPin {
+impl hal::InputPin for OpenDrainPin {
 	type Error = Infallible;
 
 	fn try_is_high(&self) -> Result<bool, Self::Error> {
@@ -147,5 +151,90 @@ impl hal::InputPin for OpenGainPin {
 
 	fn try_is_low(&self) -> Result<bool, Self::Error> {
 		Ok(self.state.load(Ordering::SeqCst) == PinState::Low)
+	}
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	#[test]
+	fn pin_state() {
+		use vcd::Value::*;
+		use PinState::*;
+
+		assert_eq!(V0, Low.into());
+		assert_eq!(V1, High.into());
+		assert_eq!(Z, Floating.into());
+
+		assert_eq!(Low, V0.into());
+		assert_eq!(High, V1.into());
+		assert_eq!(Floating, Z.into());
+		assert_eq!(Floating, X.into());
+	}
+
+	#[test]
+	fn atomic_pin_state() {
+		use PinState::*;
+		let state = AtomicPinState::new();
+		assert_eq!(Floating, state.load(Ordering::SeqCst));
+		// loading second time should still contain value
+		assert_eq!(Floating, state.load(Ordering::SeqCst));
+		state.store(High, Ordering::SeqCst);
+		assert_eq!(High, state.load(Ordering::SeqCst));
+		let state = AtomicPinState::new_with_state(Low);
+		assert_eq!(Low, state.load(Ordering::SeqCst));
+	}
+
+	#[test]
+	fn hal_input_pin() {
+		use hal::InputPin as HalInputPin;
+		use PinState::*;
+		let state = Arc::new(AtomicPinState::new());
+		let pin = InputPin::new(state.clone());
+		assert_eq!(Ok(false), pin.try_is_high());
+		assert_eq!(Ok(false), pin.try_is_low());
+		state.store(High, Ordering::SeqCst);
+		assert_eq!(Ok(true), pin.try_is_high());
+		assert_eq!(Ok(false), pin.try_is_low());
+		state.store(Low, Ordering::SeqCst);
+		assert_eq!(Ok(false), pin.try_is_high());
+		assert_eq!(Ok(true), pin.try_is_low());
+	}
+
+	#[test]
+	fn hal_push_pull_pin() {
+		use hal::InputPin as HalInputPin;
+		use hal::OutputPin as HalOutputPin;
+		use PinState::*;
+		let state = Arc::new(AtomicPinState::new());
+		let mut pin = PushPullPin::new(state.clone());
+		assert_eq!(Floating, state.load(Ordering::SeqCst));
+		assert_eq!(Ok(()), pin.try_set_high());
+		assert_eq!(High, state.load(Ordering::SeqCst));
+		assert_eq!(Ok(true), pin.try_is_high());
+		assert_eq!(Ok(false), pin.try_is_low());
+		assert_eq!(Ok(()), pin.try_set_low());
+		assert_eq!(Low, state.load(Ordering::SeqCst));
+		assert_eq!(Ok(false), pin.try_is_high());
+		assert_eq!(Ok(true), pin.try_is_low());
+	}
+
+	#[test]
+	fn hal_open_drain_pin() {
+		use hal::InputPin as HalInputPin;
+		use hal::OutputPin as HalOutputPin;
+		use PinState::*;
+		let state = Arc::new(AtomicPinState::new());
+		let mut pin = OpenDrainPin::new(state.clone());
+		assert_eq!(Floating, state.load(Ordering::SeqCst));
+		assert_eq!(Ok(()), pin.try_set_high());
+		assert_eq!(Low, state.load(Ordering::SeqCst));
+		assert_eq!(Ok(false), pin.try_is_high());
+		assert_eq!(Ok(true), pin.try_is_low());
+		assert_eq!(Ok(()), pin.try_set_low());
+		assert_eq!(Floating, state.load(Ordering::SeqCst));
+		assert_eq!(Ok(false), pin.try_is_high());
+		assert_eq!(Ok(false), pin.try_is_low());
 	}
 }
