@@ -172,6 +172,8 @@ impl hal::StatefulOutputPin for PushPullPin {
 	}
 }
 
+impl hal::toggleable::Default for PushPullPin {}
+
 impl hal::InputPin for PushPullPin {
 	type Error = Infallible;
 
@@ -245,6 +247,8 @@ impl hal::StatefulOutputPin for OpenDrainPin {
 		Ok(self.state.load(Ordering::SeqCst) == PinState::Floating)
 	}
 }
+
+impl hal::toggleable::Default for OpenDrainPin {}
 
 impl hal::InputPin for OpenDrainPin {
 	type Error = Infallible;
