@@ -1,4 +1,4 @@
-use embedded_hal::digital::{InputPin, OutputPin};
+use embedded_hal::digital::blocking::{InputPin, OutputPin};
 use embedded_hal_vcd::{reader::VcdReader, writer::VcdWriterBuilder};
 use std::fs::File;
 use std::io::{BufReader, BufWriter};
@@ -23,10 +23,10 @@ fn main() -> Result<(), std::io::Error> {
 	// closure used to copy the input pin from the reader
 	// to the output pin of the writer
 	let mut copy_pins = || {
-		if in_pin.try_is_high().unwrap() {
-			out_pin.try_set_high().unwrap();
+		if in_pin.is_high().unwrap() {
+			out_pin.set_high().unwrap();
 		} else {
-			out_pin.try_set_low().unwrap();
+			out_pin.set_low().unwrap();
 		}
 	};
 
