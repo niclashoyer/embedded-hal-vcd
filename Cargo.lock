@@ -28,9 +28,9 @@ dependencies = [
 
 [[package]]
 name = "embedded-hal-sync-pins"
-version = "0.4.1"
+version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cc584b3cea67eddf25c6316e7305e19be94c667339d029ee40231e18d19aa3ec"
+checksum = "1cb4ba1cfffb97ca8ab54b69123d7460c1ae4429640678cc315b3abe6d2b5cd5"
 dependencies = [
  "embedded-hal",
  "embedded-time",
