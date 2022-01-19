@@ -10,7 +10,7 @@ embedded-hal-mock = { git = "https://github.com/niclashoyer/embedded-hal-mock", 
 
 [dependencies]
 vcd = "0.6"
-embedded-time = "0.10"
+embedded-time = "0.12"
 num-derive = "0.3"
 num-traits = "0.2"
 embedded-hal = "1.0.0-alpha.6"
