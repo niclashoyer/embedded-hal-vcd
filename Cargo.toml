@@ -1,8 +1,10 @@
 [package]
 name = "embedded-hal-vcd"
 version = "0.1.0"
-authors = ["Niclas Hoyer <niclas@verbugt.de>"]
-edition = "2018"
+edition = "2021"
+description = "A vcd reader/writer for embedded_hal"
+repository = "https://github.com/niclashoyer/embedded-hal-vcd"
+license = "MIT OR Apache-2.0"
 
 # patches needed to adapt to embedded-hal 1.0.0
 [patch.crates-io]
