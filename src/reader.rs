@@ -1,3 +1,7 @@
+//! Read VCD files and set pins accordingly.
+//!
+//!
+
 use crate::pins::*;
 use core::borrow::Borrow;
 use embedded_time::duration::*;
@@ -6,6 +10,7 @@ use std::io::Result as IOResult;
 use std::sync::atomic::Ordering;
 use std::sync::Arc;
 
+/// A reader for VCD files
 pub struct VcdReader<R>
 where
     R: std::io::Read,
@@ -20,6 +25,7 @@ impl<R> VcdReader<R>
 where
     R: std::io::Read,
 {
+    /// Create a new VCD reader from a reader that implements [std::io::Read].
     pub fn new(read: R) -> IOResult<Self> {
         let mut parser = vcd::Parser::new(read);
         let header = parser.parse_header()?;
@@ -32,10 +38,15 @@ where
         })
     }
 
+    /// Return the scale that is used by the VCD file.
+    ///
+    /// The scale defines the timescale fraction the VCD file is based on.
     pub fn scale(&self) -> Generic<u64> {
         self.scale
     }
 
+    /// Convert the timescale fraction from the VCD header to an
+    /// [embedded_time::Generic] duration.
     fn timescale_to_duration(header: &vcd::Header) -> Option<Generic<u64>> {
         if let Some((scale, unit)) = header.timescale {
             let fraction = Fraction::new(1, unit.divisor() as u32);
@@ -45,6 +56,10 @@ where
         }
     }
 
+    /// Create a new pin from a named variable in the VCD file.
+    ///
+    /// Returns an [InputPin] that can be used for any [embedded_hal]
+    /// driver implementation that needs an [embedded_hal::digital::blocking::InputPin].
     pub fn get_pin<S>(&mut self, path: &[S]) -> Option<InputPin>
     where
         S: Borrow<str>,
@@ -69,7 +84,7 @@ where
     fn next(&mut self) -> Option<Self::Item> {
         use vcd::Command::*;
         let mut timestamp = None;
-        while let Some(cmd) = self.parser.next() {
+        for cmd in self.parser.by_ref() {
             match cmd {
                 Ok(Timestamp(t)) => {
                     timestamp = Some(Generic::new(
