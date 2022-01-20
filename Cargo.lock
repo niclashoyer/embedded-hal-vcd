@@ -33,7 +33,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1cb4ba1cfffb97ca8ab54b69123d7460c1ae4429640678cc315b3abe6d2b5cd5"
 dependencies = [
  "embedded-hal",
- "embedded-time",
+ "embedded-time 0.10.1",
  "num-derive",
  "num-traits",
  "vcd",
@@ -46,7 +46,7 @@ dependencies = [
  "embedded-hal",
  "embedded-hal-mock",
  "embedded-hal-sync-pins",
- "embedded-time",
+ "embedded-time 0.12.1",
  "fnv",
  "num-derive",
  "num-traits",
@@ -58,6 +58,15 @@ name = "embedded-time"
 version = "0.10.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f85ab0d224a6c70f11426a9f04d5f26d250605b80df8fbed197e49d4454f58d7"
+dependencies = [
+ "num",
+]
+
+[[package]]
+name = "embedded-time"
+version = "0.12.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d7a4b4d10ac48d08bfe3db7688c402baadb244721f30a77ce360bd24c3dffe58"
 dependencies = [
  "num",
 ]
