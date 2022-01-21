@@ -21,3 +21,5 @@ fnv = "1.0"
 
 [dev-dependencies]
 embedded-hal-mock = "0.8.0"
+pretty_assertions = "1.0"
+synchronized-writer = "1.1"

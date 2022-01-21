@@ -104,3 +104,51 @@ where
         timestamp
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use embedded_hal::digital::blocking::InputPin;
+
+    #[test]
+    fn read_simple() {
+        let vcd = "
+$timescale 1ns $end
+$scope module logic $end
+$var wire 1 t test $end
+$upscope $end
+$enddefinitions $end
+#0
+0t
+#100
+1t
+#200
+1t
+#300
+0t
+#400
+#500
+"
+        .as_bytes();
+        let states = vec![
+            (0, false),
+            (100, false),
+            (200, true),
+            (300, true),
+            (400, false),
+            (500, false),
+        ];
+        let mut reader = VcdReader::new(vcd).unwrap();
+        let pin = reader.get_pin(&["logic", "test"]).unwrap();
+        for (vcd_time, (state_time, state_pin)) in reader.zip(states) {
+            let vcd_time: Nanoseconds<u64> = vcd_time.try_into().unwrap();
+            assert_eq!(vcd_time, state_time.nanoseconds());
+            assert_eq!(
+                pin.is_high(),
+                Ok(state_pin),
+                "testing pin state at timestamp {}",
+                vcd_time
+            );
+        }
+    }
+}

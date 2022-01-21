@@ -24,9 +24,15 @@ where
 {
     /// Create a new builder from a writer that implements [std::io::Write].
     pub fn new(writer: W) -> IOResult<Self> {
+        Self::new_with_module(writer, "top")
+    }
+
+    /// Create a new builder from a writer that implements [std::io::Write] with
+    /// an explicit module name.
+    pub fn new_with_module(writer: W, module: &str) -> IOResult<Self> {
         let mut writer = vcd::Writer::new(writer);
         writer.timescale(1, vcd::TimescaleUnit::NS)?;
-        writer.add_module("top")?;
+        writer.add_module(module)?;
         Ok(VcdWriterBuilder {
             writer,
             pins: vec![],
@@ -67,6 +73,11 @@ where
         let pin = Arc::new(AtomicPinState::new_with_state(PinState::Floating));
         self.pins.push((code, pin.clone()));
         Ok(OpenDrainPin::new(pin))
+    }
+
+    /// Change the module used for wires added hereafter.
+    pub fn add_module(&mut self, identifier: &str) -> IOResult<()> {
+        self.writer.add_module(identifier)
     }
 
     /// Build a VCD writer.
@@ -121,5 +132,75 @@ where
             self.writer.change_scalar(*id, vcd::Value::from(state))?;
         }
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use embedded_hal::digital::blocking::OutputPin;
+    use pretty_assertions::assert_eq;
+    use std::fmt;
+    use std::sync::{Arc, Mutex};
+    use synchronized_writer::SynchronizedWriter;
+
+    #[derive(PartialEq, Eq)]
+    #[doc(hidden)]
+    pub struct PrettyString<'a>(pub &'a str);
+
+    /// Make diff to display string as multi-line string
+    impl<'a> fmt::Debug for PrettyString<'a> {
+        fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+            f.write_str(self.0)
+        }
+    }
+
+    macro_rules! assert_eq {
+        ($left:expr, $right:expr) => {
+            pretty_assertions::assert_eq!(PrettyString($left), PrettyString($right));
+        };
+    }
+
+    #[test]
+    fn write_simple() {
+        let vcd = "$timescale 1 ns $end
+$scope module logic $end
+$var wire 1 ! test $end
+$upscope $end
+$enddefinitions $end
+#0
+0!
+#100
+1!
+#200
+1!
+#300
+0!
+#400
+#500
+"
+        .to_string();
+        let buf = Arc::new(Mutex::new(Vec::new()));
+        let writer = SynchronizedWriter::new(buf.clone());
+        let mut writer = VcdWriterBuilder::new_with_module(writer, "logic").unwrap();
+
+        let mut out_pin = writer.add_push_pull_pin("test").unwrap();
+        let mut writer = writer.build().unwrap();
+        writer.timestamp(0.nanoseconds()).unwrap();
+        out_pin.set_low().unwrap();
+        writer.sample().unwrap();
+        writer.timestamp(100.nanoseconds()).unwrap();
+        out_pin.set_high().unwrap();
+        writer.sample().unwrap();
+        writer.timestamp(200.nanoseconds()).unwrap();
+        writer.sample().unwrap();
+        writer.timestamp(300.nanoseconds()).unwrap();
+        out_pin.set_low().unwrap();
+        writer.sample().unwrap();
+        writer.timestamp(400.nanoseconds()).unwrap();
+        writer.timestamp(500.nanoseconds()).unwrap();
+
+        let writer_vcd = String::from_utf8((*buf.lock().unwrap()).clone()).unwrap();
+        assert_eq!(&writer_vcd, &vcd);
     }
 }
