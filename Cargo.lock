@@ -42,6 +42,8 @@ checksum = "129b101ddfee640565f7c07b301a31d95aa21e5acef21a491c307139f5fa4c91"
 [[package]]
 name = "embedded-hal-sync-pins"
 version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c4dcffed7ec93a5dedcc03dd59413e773c043d90d8286b30b88907c9c93a59a8"
 dependencies = [
  "embedded-hal",
  "num-derive",
@@ -205,9 +207,9 @@ dependencies = [
 
 [[package]]
 name = "synchronized-writer"
-version = "1.1.10"
+version = "1.1.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5f886607578031fffb0996a24a5e5b73313f36dca63416b9d1c1004f7cb6084d"
+checksum = "d3543ca0810e71767052bdcdd5653f23998b192642a22c5164bfa6581e40a4a2"
 
 [[package]]
 name = "unicode-xid"
