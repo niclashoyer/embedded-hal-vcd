@@ -1,4 +1,4 @@
-use embedded_hal::digital::blocking::{InputPin, OutputPin};
+use embedded_hal::digital::{InputPin, OutputPin};
 use embedded_hal_vcd::{reader::VcdReader, writer::VcdWriterBuilder};
 use std::fs::File;
 use std::io::{BufReader, BufWriter};

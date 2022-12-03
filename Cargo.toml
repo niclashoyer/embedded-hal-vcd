@@ -1,25 +1,20 @@
 [package]
 name = "embedded-hal-vcd"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 description = "A vcd reader/writer for embedded_hal"
 repository = "https://github.com/niclashoyer/embedded-hal-vcd"
 license = "MIT OR Apache-2.0"
-
-# patches needed to adapt to embedded-hal 1.0.0
-[patch.crates-io]
-embedded-hal-mock = { git = "https://github.com/niclashoyer/embedded-hal-mock", branch = "hal-1.0.0" }
 
 [dependencies]
 vcd = "0.6"
 embedded-time = "0.12"
 num-derive = "0.3"
 num-traits = "0.2"
-embedded-hal = "1.0.0-alpha.6"
-embedded-hal-sync-pins = { version = "0.5", features = ["vcd-value"] }
+embedded-hal = "1.0.0-alpha.9"
+embedded-hal-sync-pins = { version = "0.7", features = ["vcd-value"] }
 fnv = "1.0"
 
 [dev-dependencies]
-embedded-hal-mock = "0.8.0"
 pretty_assertions = "1.0"
 synchronized-writer = "1.1"
