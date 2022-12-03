@@ -138,7 +138,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use embedded_hal::digital::blocking::OutputPin;
+    use embedded_hal::digital::OutputPin;
     use pretty_assertions::assert_eq;
     use std::fmt;
     use std::sync::{Arc, Mutex};

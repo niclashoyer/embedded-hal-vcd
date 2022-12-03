@@ -59,7 +59,7 @@ where
     /// Create a new pin from a named variable in the VCD file.
     ///
     /// Returns an [InputPin] that can be used for any [embedded_hal]
-    /// driver implementation that needs an [embedded_hal::digital::blocking::InputPin].
+    /// driver implementation that needs an [embedded_hal::digital::InputPin].
     pub fn get_pin<S>(&mut self, path: &[S]) -> Option<InputPin>
     where
         S: Borrow<str>,
@@ -108,7 +108,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use embedded_hal::digital::blocking::InputPin;
+    use embedded_hal::digital::InputPin;
 
     #[test]
     fn read_simple() {
