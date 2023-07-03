@@ -9,7 +9,7 @@ license = "MIT OR Apache-2.0"
 [dependencies]
 vcd = "0.6"
 embedded-time = "0.12"
-num-derive = "0.3"
+num-derive = "0.4"
 num-traits = "0.2"
 embedded-hal = "1.0.0-alpha.9"
 embedded-hal-sync-pins = { version = "0.7", features = ["vcd-value"] }
